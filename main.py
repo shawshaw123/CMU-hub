@@ -1,25 +1,25 @@
 """
 CISC Virtual Hub – Main entry point
-login → reset → profile via QStackedWidget
+login → reset → profile (with navbar/header)
 """
 
 import sys
 import warnings
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QStackedWidget, QMessageBox
+    QApplication, QMainWindow, QStackedWidget, QMessageBox, QHBoxLayout, QWidget
 )
 from PyQt6.QtCore import QSize
 
-import login
 import resetpassword
-import user_profile          # must expose ProfileWidget
+import user_profile
+import navbar
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-START_WIDTH  = 1200
+START_WIDTH  = 1980
 START_HEIGHT = 1080
-MIN_WIDTH    = 800
-MIN_HEIGHT   = 800
+MIN_WIDTH    = 1280
+MIN_HEIGHT   = 720
 
 
 class MainWindow(QMainWindow):
@@ -29,27 +29,63 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(QSize(MIN_WIDTH, MIN_HEIGHT))
         self.resize(START_WIDTH, START_HEIGHT)
 
+        # Create central widget with horizontal layout
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        
+        # Main horizontal layout
+        main_layout = QHBoxLayout(central_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        # Add sidebar
+        self.sidebar = navbar.Sidebar()
+        main_layout.addWidget(self.sidebar)
+
+        # Content area with stacked widget
         self.stack = QStackedWidget()
-        self.setCentralWidget(self.stack)
+        main_layout.addWidget(self.stack, 1)  # Take remaining space
 
         # Pages
-        self.login_page   = login.LoginWidget()
-        self.reset_page   = resetpassword.ResetPasswordWidget()
         self.profile_page = user_profile.ProfileWidget()
-
-        self.stack.addWidget(self.login_page)
-        self.stack.addWidget(self.reset_page)
         self.stack.addWidget(self.profile_page)
+        
+        # Connect navbar navigation
+        self.connect_navbar_buttons()
+        
+        # Set initial page
+        self.stack.setCurrentWidget(self.profile_page)
 
-        # Navigation
-        self.login_page.forgot_password_requested.connect(
-            lambda: self.stack.setCurrentWidget(self.reset_page))
-        self.reset_page.back_to_signin_requested.connect(
-            lambda: self.stack.setCurrentWidget(self.login_page))
-        self.login_page.login_successful.connect(
-            lambda: self.stack.setCurrentWidget(self.profile_page))
+    def connect_navbar_buttons(self):
+        """Connect navbar buttons to page navigation"""
+        # Connect main section buttons
+        for section in self.sidebar.sections:
+            section.main_btn.clicked.connect(lambda checked, section=section: self.navigate_to_section(section))
+            
+            # Connect sub-item buttons
+            for i in range(section.sub_layout.count()):
+                sub_btn = section.sub_layout.itemAt(i).widget()
+                if sub_btn:
+                    sub_btn.clicked.connect(lambda checked, section=section, sub_btn=sub_btn: self.navigate_to_subsection(section, sub_btn))
 
-        self.stack.setCurrentWidget(self.login_page)
+    def navigate_to_section(self, section):
+        """Navigate to a main section"""
+        section_name = section.main_btn.text().replace("  ", "").strip()
+        print(f"Navigating to section: {section_name}")
+        
+        # For now, just show the profile page for all sections
+        # You can add specific pages for each section later
+        self.stack.setCurrentWidget(self.profile_page)
+
+    def navigate_to_subsection(self, section, sub_btn):
+        """Navigate to a subsection"""
+        section_name = section.main_btn.text().replace("  ", "").strip()
+        subsection_name = sub_btn.text()
+        print(f"Navigating to subsection: {section_name} > {subsection_name}")
+        
+        # For now, just show the profile page for all subsections
+        # You can add specific pages for each subsection later
+        self.stack.setCurrentWidget(self.profile_page)
 
     def closeEvent(self, event):
         if QMessageBox.question(self, "Exit", "Are you sure you want to exit?",
