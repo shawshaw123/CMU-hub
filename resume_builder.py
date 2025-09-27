@@ -526,7 +526,6 @@ class ResumeBuilderDialog(QDialog):
                     background: #f8f9fa;
                     border-radius: 4px;
                     margin: 2px 0;
-                    word-wrap: break-word;
                 }
             """)
             

@@ -92,11 +92,15 @@ class Sidebar(QFrame):
         self.v = QVBoxLayout(self)
         self.v.setContentsMargins(0, 0, 0, 0)
         self.v.setSpacing(0)
+        self.v.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # ---------------- Header Section ----------------
         top = QFrame()
-        top.setFixedHeight(60)
-        top.setStyleSheet("background:#ffc107;")
+        top.setFixedHeight(50)  # Reduced from 60 to 50 pixels for a more compact header
+        top.setStyleSheet("""
+            background: #ffc107;
+            border-bottom: 1px solid #e0a800;  /* Add a subtle border at the bottom */
+        """)
 
         h = QHBoxLayout(top)
         h.setContentsMargins(15, 0, 15, 0)
@@ -129,8 +133,6 @@ class Sidebar(QFrame):
         for section in self.sections:
             self.v.addWidget(section)
 
-        # Stretch pushes sections to top
-        self.v.addStretch()
 
     # ========================================================
     # Sidebar Toggle Logic

@@ -312,7 +312,6 @@ class ProfileWidget(QWidget):
             QTableWidget::item {{
                 padding: 8px;
                 border-bottom: 1px solid #f0f0f0;
-                word-wrap: break-word;
             }}
             QTableWidget::item:selected {{
                 background: #e8f5e9;
